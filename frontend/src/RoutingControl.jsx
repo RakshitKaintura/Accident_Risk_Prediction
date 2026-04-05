@@ -1,115 +1,169 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import axios from "axios";
 
-export default function RoutingControl({ start, end }) {
+export default function RoutingControl({ start, end, apiBaseUrl, onRouteSummary }) {
   const map = useMap();
   const [riskZones, setRiskZones] = useState([]);
   const routingControlRef = useRef(null);
+  const dangerLayersRef = useRef([]);
 
-  // 1. FETCH RISK ZONES ON LOAD
   useEffect(() => {
     const fetchRiskZones = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/heatmap");
-        const zones = response.data.points.map(p => ({ lat: p[0], lng: p[1] }));
+        const response = await axios.get(`${apiBaseUrl}/heatmap`);
+        const zones = response.data.points.map((point) => ({ lat: point[0], lng: point[1], intensity: point[2] || 0.4 }));
         setRiskZones(zones);
       } catch (error) {
-        console.error("❌ Failed to load risk data:", error);
+        console.error("Failed to load risk data", error);
       }
     };
+
     fetchRiskZones();
-  }, []);
+  }, [apiBaseUrl]);
 
-  // 2. CREATE & UPDATE ROUTE
   useEffect(() => {
-    // Only run if we have a map, risk zones, AND valid start/end points
-    if (!map || riskZones.length === 0 || !start || !end) return;
+    if (!map || riskZones.length === 0 || !start || !end) {
+      return undefined;
+    }
 
-    // cleanup previous routing control
     if (routingControlRef.current) {
       try {
         map.removeControl(routingControlRef.current);
-      } catch (e) { console.warn("Cleanup error", e); }
+      } catch {
+        // no-op cleanup
+      }
     }
 
+    dangerLayersRef.current.forEach((layer) => map.removeLayer(layer));
+    dangerLayersRef.current = [];
+
     const routingControl = L.Routing.control({
-      waypoints: [
-        L.latLng(start[0], start[1]),
-        L.latLng(end[0], end[1])
-      ],
+      waypoints: [L.latLng(start[0], start[1]), L.latLng(end[0], end[1])],
       routeWhileDragging: false,
       lineOptions: {
-        styles: [{ color: "#3498db", opacity: 0.7, weight: 6 }]
+        styles: [{ color: "#1f6feb", opacity: 0.75, weight: 6 }],
       },
-      show: false, // Keep UI clean
+      show: false,
       addWaypoints: false,
       draggableWaypoints: false,
       fitSelectedRoutes: true,
-      createMarker: function() { return null; } // Hide default pins (we can add custom ones if needed)
+      createMarker() {
+        return null;
+      },
     }).addTo(map);
 
     routingControlRef.current = routingControl;
 
-    // 3. AUDIT THE ROUTE
-    routingControl.on("routesfound", function (e) {
-      const routes = e.routes;
-      const route = routes[0];
-      const coordinates = route.coordinates;
+    routingControl.on("routesfound", (event) => {
+      dangerLayersRef.current.forEach((layer) => map.removeLayer(layer));
+      dangerLayersRef.current = [];
 
-      // Clean old red lines
-      map.eachLayer((layer) => {
-        if (layer.options && layer.options.color === "#e74c3c") {
-          map.removeLayer(layer);
+      const route = event.routes[0];
+      const coordinates = route?.coordinates ?? [];
+      const summary = route?.summary ?? {};
+      const dangerSegments = [];
+      let currentSegment = [];
+      let riskyPoints = 0;
+      let weightedIntensitySum = 0;
+      let highIntensityPoints = 0;
+
+      coordinates.forEach((point) => {
+        const nearbyIntensities = [];
+
+        riskZones.forEach((zone) => {
+          const latDiff = point.lat - zone.lat;
+          const lngDiff = point.lng - zone.lng;
+          const euclidean = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+          if (euclidean < 0.003) {
+            nearbyIntensities.push(zone.intensity);
+          }
+        });
+
+        const isRisky = nearbyIntensities.length > 0;
+        const localIntensity = isRisky ? Math.max(...nearbyIntensities) : 0;
+
+        if (isRisky) {
+          riskyPoints += 1;
+          weightedIntensitySum += localIntensity;
+          if (localIntensity >= 0.65) {
+            highIntensityPoints += 1;
+          }
+          currentSegment.push(point);
+          return;
+        }
+
+        if (currentSegment.length > 0) {
+          dangerSegments.push(currentSegment);
+          currentSegment = [];
         }
       });
 
-      let dangerSegments = [];
-      let currentSegment = [];
-
-      for (let i = 0; i < coordinates.length; i++) {
-        const point = coordinates[i];
-        let isRisky = false;
-
-        // Proximity Check (~300m)
-        for (let zone of riskZones) {
-          const dist = Math.sqrt(Math.pow(point.lat - zone.lat, 2) + Math.pow(point.lng - zone.lng, 2));
-          if (dist < 0.003) { 
-            isRisky = true;
-            break;
-          }
-        }
-
-        if (isRisky) {
-          currentSegment.push(point);
-        } else {
-          if (currentSegment.length > 0) {
-            dangerSegments.push(currentSegment);
-            currentSegment = [];
-          }
-        }
+      if (currentSegment.length > 0) {
+        dangerSegments.push(currentSegment);
       }
-      if (currentSegment.length > 0) dangerSegments.push(currentSegment);
 
-      // Draw Danger Lines
+      const totalPoints = Math.max(1, coordinates.length);
+      const riskExposureRatio = riskyPoints / totalPoints;
+      const avgRiskIntensity = riskyPoints > 0 ? weightedIntensitySum / riskyPoints : 0;
+      const highRiskShare = riskyPoints > 0 ? highIntensityPoints / riskyPoints : 0;
+      const routeRiskScore = Math.min(
+        100,
+        Math.round((riskExposureRatio * 70 + avgRiskIntensity * 20 + highRiskShare * 10) * 100) / 100,
+      );
+
+      let routeRiskLevel = "Low";
+      if (routeRiskScore >= 75) {
+        routeRiskLevel = "High";
+      } else if (routeRiskScore >= 45) {
+        routeRiskLevel = "Medium";
+      }
+
+      if (onRouteSummary) {
+        onRouteSummary({
+          totalDistanceKm: Number(((summary.totalDistance || 0) / 1000).toFixed(2)),
+          totalTimeMin: Number(((summary.totalTime || 0) / 60).toFixed(1)),
+          riskExposurePct: Number((riskExposureRatio * 100).toFixed(1)),
+          highRiskSharePct: Number((highRiskShare * 100).toFixed(1)),
+          avgRiskIntensityPct: Number((avgRiskIntensity * 100).toFixed(1)),
+          routeRiskScore,
+          routeRiskLevel,
+          highRiskSegments: dangerSegments.length,
+        });
+      }
+
       dangerSegments.forEach((segment) => {
-        if (segment.length > 1) {
-          L.polyline(segment, { color: "#e74c3c", weight: 10, opacity: 0.8 })
-          .bindPopup("⚠️ <b>High Risk Segment</b>")
-          .addTo(map);
+        if (segment.length < 2) {
+          return;
         }
+
+        const layer = L.polyline(segment, {
+          color: "#d12c4a",
+          weight: 9,
+          opacity: 0.85,
+        })
+          .bindPopup("High-risk segment")
+          .addTo(map);
+
+        dangerLayersRef.current.push(layer);
       });
     });
 
     return () => {
       if (routingControlRef.current) {
-        try { map.removeControl(routingControlRef.current); } catch (e) {}
+        try {
+          map.removeControl(routingControlRef.current);
+        } catch {
+          // no-op cleanup
+        }
       }
+      dangerLayersRef.current.forEach((layer) => map.removeLayer(layer));
+      dangerLayersRef.current = [];
     };
-  }, [map, riskZones, start, end]); // Re-run when Start/End changes
+  }, [map, riskZones, start, end, onRouteSummary]);
 
   return null;
 }

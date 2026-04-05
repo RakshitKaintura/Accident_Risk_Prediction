@@ -31,3 +31,9 @@ REAL_BLACKSPOTS = {
 # ==========================================
 RAW_DATA_PATH = "data/raw/bengaluru_nodes.csv"
 PROCESSED_DATA_PATH = "data/processed/training_data.csv"
+CITY_YEARLY_ACCIDENTS_PATH = "data/NEW DATA/a583a07c-731b-4e8d-b0cb-d06e76ccc00c.csv"
+STATION_WISE_ACCIDENTS_PATH = "data/NEW DATA/btp_2025_station_wise.csv"
+STATION_WISE_2018_2020_PATH = "data/NEW DATA/aef42379-f1f7-4a3b-94f5-5f344e7120f2.csv"
+STATION_WISE_2021_2022_PATH = "data/NEW DATA/492d3dc6-ffc3-4b0e-b7d9-176d0ef7f1ec.csv"
+STATION_WISE_2023_PATH = "data/NEW DATA/abc5af52-08a7-4435-8ba1-12b99f62ee28.csv"
+STATION_WISE_2024_PATH = "data/NEW DATA/74e645e3-85d2-4d81-a133-4f346f87fdd6.csv"

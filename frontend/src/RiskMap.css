@@ -1,0 +1,393 @@
+.layout-shell {
+  --bg-soft: #f4f5f1;
+  --panel: #fffef9;
+  --ink: #1f2a35;
+  --muted: #5b6570;
+  --accent: #1f6feb;
+  --accent-2: #0f9f75;
+  --warning: #d12c4a;
+
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(340px, 1fr);
+  min-height: 100vh;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 5% 5%, #dbe8ff 0, transparent 30%),
+    radial-gradient(circle at 95% 95%, #ffe8be 0, transparent 28%),
+    var(--bg-soft);
+}
+
+.map-panel {
+  position: relative;
+  padding: 14px;
+}
+
+.leaflet-map {
+  height: calc(100vh - 28px);
+  width: 100%;
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(31, 42, 53, 0.18);
+  overflow: hidden;
+}
+
+.control-panel {
+  padding: 26px;
+  border-left: 1px solid #d6ddd6;
+  background: linear-gradient(180deg, #fffcf3 0%, #f8fbf7 100%);
+  overflow-y: auto;
+}
+
+.panel-header {
+  animation: rise-in 0.45s ease;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #526678;
+  font-weight: 700;
+}
+
+.panel-header h1 {
+  margin: 6px 0;
+  font-size: 1.8rem;
+  line-height: 1.1;
+}
+
+.subtext {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.mode-switch {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.heatmap-switch {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mode-btn {
+  border: 1px solid #d0d7df;
+  background: #fff;
+  color: #304354;
+  padding: 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-btn.active {
+  background: #ecf4ff;
+  border-color: #94bcff;
+  color: #174f99;
+}
+
+.search-card {
+  margin-top: 14px;
+  background: var(--panel);
+  border: 1px solid #dbe3db;
+  border-radius: 14px;
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.search-card label {
+  font-size: 0.82rem;
+  color: #4c5763;
+  font-weight: 600;
+}
+
+.search-card input {
+  border: 1px solid #cdd7e1;
+  border-radius: 8px;
+  padding: 10px;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.search-card input:focus {
+  border-color: #669af0;
+  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+}
+
+.primary-btn {
+  margin-top: 8px;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 12px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #1f6feb 0%, #2897d0 100%);
+  cursor: pointer;
+}
+
+.primary-btn.route {
+  background: linear-gradient(135deg, #0f9f75 0%, #18b66d 100%);
+}
+
+.primary-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.error-banner {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ef9bad;
+  background: #fff2f4;
+  color: #951936;
+  font-size: 0.9rem;
+}
+
+.result-card {
+  margin-top: 14px;
+  background: var(--panel);
+  border: 1px solid #dbe3db;
+  border-radius: 14px;
+  padding: 16px;
+  animation: rise-in 0.35s ease;
+}
+
+.result-label {
+  margin: 0;
+  color: #5a6f76;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.result-card h2 {
+  margin: 6px 0;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.probability {
+  margin-top: 0;
+  color: #33424e;
+  font-weight: 600;
+}
+
+.context-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.chip {
+  border: 1px solid #dbe4eb;
+  border-radius: 10px;
+  padding: 9px;
+  display: grid;
+  gap: 4px;
+  background: #f8fcff;
+}
+
+.chip span {
+  font-size: 0.75rem;
+  color: #5c6a74;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chip strong {
+  color: #2a3b47;
+}
+
+.chip strong.danger {
+  color: #b2203f;
+}
+
+.chip strong.warn {
+  color: #b67613;
+}
+
+.chip strong.good {
+  color: #1f7a3a;
+}
+
+.fact-list,
+.factor-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: #2f3d49;
+}
+
+.factor-list {
+  margin-top: 12px;
+  color: #41515d;
+  font-size: 0.92rem;
+}
+
+.explain-box {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed #d5dee6;
+}
+
+.explain-title {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #506675;
+  font-weight: 700;
+}
+
+.explain-row {
+  margin-bottom: 8px;
+}
+
+.explain-label-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.86rem;
+  color: #344753;
+}
+
+.explain-label-line strong.neg {
+  color: #1f7a3a;
+}
+
+.explain-track {
+  margin-top: 4px;
+  height: 7px;
+  background: #e8eff6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.explain-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2c84df, #d9415d);
+  border-radius: inherit;
+}
+
+.explain-fill.neg {
+  background: linear-gradient(90deg, #2f9c69, #62be85);
+}
+
+.route-scorecard .route-level {
+  margin: 6px 0 8px;
+  font-size: 1.4rem;
+}
+
+.route-scorecard .route-level.low {
+  color: #1f7a3a;
+}
+
+.route-scorecard .route-level.medium {
+  color: #b67613;
+}
+
+.route-scorecard .route-level.high {
+  color: #b2203f;
+}
+
+.station-table {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.station-row {
+  border: 1px solid #dbe4eb;
+  border-radius: 10px;
+  padding: 9px 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  background: #fbfdff;
+}
+
+.station-row p {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: #61707d;
+}
+
+.station-metrics {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  font-size: 0.8rem;
+  color: #31424f;
+}
+
+.sparkline {
+  width: 72px;
+  height: 24px;
+  background: #f0f5fb;
+  border-radius: 5px;
+  padding: 1px;
+}
+
+.sparkline-empty {
+  font-size: 0.7rem;
+  color: #788997;
+}
+
+.station-metrics .danger {
+  color: #b2203f;
+}
+
+.station-metrics .good {
+  color: #1f7a3a;
+}
+
+.placeholder {
+  color: #4d6072;
+  line-height: 1.5;
+}
+
+.placeholder.route-ready {
+  color: #175649;
+  font-weight: 600;
+}
+
+@keyframes rise-in {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 1024px) {
+  .layout-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .map-panel {
+    padding: 10px;
+  }
+
+  .leaflet-map {
+    height: 56vh;
+    border-radius: 12px;
+  }
+
+  .control-panel {
+    border-left: none;
+    border-top: 1px solid #d6ddd6;
+    padding: 18px;
+  }
+}

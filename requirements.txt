@@ -5,5 +5,8 @@ pandas
 scikit-learn
 pydantic
 numpy
+python-dotenv
+requests
+osmnx
 httpx
 python-multipart
