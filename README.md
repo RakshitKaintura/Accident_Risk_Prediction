@@ -16,8 +16,9 @@ It provides an interactive map UI to analyze any location or compare route risk 
 
 ## Architecture
 
-- `src/`: Data pipeline, feature engineering, and model training
-- `api/`: FastAPI inference API and heatmap endpoints
+- `backend/src/`: Data pipeline, feature engineering, and model training
+- `backend/api/`: FastAPI inference API and analytics endpoints
+- `backend/data/`: Raw, processed, and model artifacts
 - `frontend/`: React + Leaflet app for map visualization and risk analysis
 
 Flow:
@@ -37,6 +38,7 @@ Flow:
 ### 1) Backend
 
 ```bash
+cd backend
 pip install -r requirements.txt
 copy .env.example .env
 python -m uvicorn api.main:app --reload
@@ -45,6 +47,7 @@ python -m uvicorn api.main:app --reload
 ### 2) Frontend
 
 ```bash
+cd ..
 cd frontend
 npm install
 copy .env.example .env
@@ -56,6 +59,7 @@ Frontend runs on `http://localhost:5173` and calls backend via `VITE_API_BASE_UR
 ## Model pipeline commands
 
 ```bash
+cd backend
 python -m src.build_dataset
 python -m src.train_model
 ```
